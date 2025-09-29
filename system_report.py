@@ -55,11 +55,14 @@ def print_device_info():
     Prints device information including hostname and domain.
     """
     
+    hostname, domain = "", ""
     # Get hostname and fully qualified domain name
-    hostname = socket.gethostname()
-    fqdn = socket.getfqdn()
-    # Extract domain from FQDN if present
-    domain = fqdn[len(hostname) + 1:] if fqdn != hostname else ''
+    try:
+        hostname = subprocess.check_output(['hostname', '-s'], text=True).strip()
+        domain = subprocess.check_output(['hostname', '-d'], text=True).strip()
+    except Exception as e:
+        hostname, domain = "N/A", "N/A"
+
     print(f"{GREEN}Device Information:{RESET}")
     print(f"Hostname:          {hostname}")
     print(f"Domain:            {domain}")
@@ -248,7 +251,7 @@ if __name__ == "__main__":
     clear()
 
     # Get hostname for log file naming
-    hostname = socket.gethostname()
+    hostname = subprocess.check_output(['hostname', '-s'], text=True).strip()
     # Expand user's home directory path
     home_dir = os.path.expanduser('~')
     # Construct log file path
