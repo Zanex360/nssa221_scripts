@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # Alexander Vyzhnyuk
-# October 23    , 2025
+# October 23, 2025
 
 import os
 import sys
