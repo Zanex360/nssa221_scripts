@@ -42,6 +42,7 @@ def display_links(home_str, directory, show_remove_option=False):
     if symlinks:
         print()
         print(f"{bcolors.HEADER}Symbolic Link{bcolors.RESET}".ljust(20) + f"{bcolors.HEADER}        Target Path{bcolors.RESET}")
+        # Iterate through each link that is found
         for link_name, target in sorted(symlinks):
             print(link_name.ljust(20) + target)
     print()
@@ -69,16 +70,18 @@ def create_symlink(home_dir):
     if len(matches) > 1:
         # Handle multiple matches by displaying options and getting user selection
         print(f"Multiple files with the name \"{filename}\" were found:")
+        # Iterate and print matches
         for i, path in enumerate(matches, 1):
             print(f"[{i}] {path}")
         while True:
             try:
                 selection = int(input(f"Please select the file you want to create a shortcut for (1-{len(matches)}): ")) - 1
                 if 0 <= selection < len(matches):
+                    # Make sure file selection is in the list
                     target = matches[selection]
                     break
                 else:
-                    # Check index input
+                    # Catch invalid input
                     print(f"{bcolors.FAIL}Invalid selection. Please try again.{bcolors.RESET}")
             except ValueError:
                 print(f"{bcolors.FAIL}Invalid selection. Please try again.{bcolors.RESET}")
@@ -95,6 +98,7 @@ def create_symlink(home_dir):
         print(f"{bcolors.FAIL}A file with name {link_name} already exists in your home directory.{bcolors.RESET}")
         overwrite = input("Do you want to overwrite it? (Y/y to confirm): ").strip().lower()
         if overwrite != 'y':
+            # Return to menu
             print("Creation cancelled.")
             input("Press Enter to continue...")
             return
@@ -112,6 +116,7 @@ def create_symlink(home_dir):
         os.symlink(target, link_path)
         print(f"{bcolors.GREEN}Symbolic link created successfully.{bcolors.RESET}")
     except Exception as e:
+        # Catch if symlink creation throws an exception
         print(f"{bcolors.FAIL}Error creating symbolic link: {e}{bcolors.RESET}")
     input("Press Enter to continue...")
 
@@ -128,14 +133,17 @@ def remove_symlink(home_str, home_dir):
         display_links(home_str, home_dir, show_remove_option=True)
         option = input().strip().lower()
         if option == '':
+            # Return
             break
         if option != 'r':
+            # Catch invalid input
             print(f"{bcolors.FAIL}Invalid option. Press Enter to return or R/r to remove.{bcolors.RESET}")
             input("Press Enter to continue...")
             continue
         # Prompt for link to remove
         remove_name = input("Please enter the shortcut/link to remove: ").strip()
         remove_path = home_dir / remove_name
+        # Catch if path or link doesn't exist
         if not remove_path.exists() or not remove_path.is_symlink():
             print(f"{bcolors.FAIL}The specified link does not exist or is not a symlink. Please try again.{bcolors.RESET}")
             input("Press Enter to continue...")
@@ -154,8 +162,17 @@ def generate_report(home_str, home_dir):
     input()     # Wait for user to press Enter to return to menu
 
 def main():
-    home_dir = Path.home()
+    # Set home_dir to desktop
+    home_dir = Path.home() / "Desktop"
     home_str = str(home_dir)
+
+    # Check if the desktop directory exists, otherwise place all links in home
+    if os.path.isdir(home_str):
+        pass
+    else:
+        home_dir = Path.home()
+        home_str = str(home_dir)
+
     while True:
         clear_terminal()
         print("Welcome to the shortcut manager!\n")
