@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # Alexander Vyzhnyuk
-# October 17, 2025
+# October 23    , 2025
 
 import os
 import sys
@@ -16,6 +16,7 @@ def clear_terminal():
     os.system('clear')
 
 def find_files(filename):
+    # Search the entire filesystem for files matching the given filename
     matches = []
     for root, _, files in os.walk('/'):
         if filename in files:
@@ -25,6 +26,7 @@ def find_files(filename):
     return matches
 
 def list_symlinks(directory):
+    # Collect all symbolic links in the given directory with their targets
     symlinks = []
     for item in directory.iterdir():
         if item.is_symlink():
@@ -33,12 +35,13 @@ def list_symlinks(directory):
     return symlinks
 
 def display_links(home_str, directory, show_remove_option=False):
+    # Display the current directory, number of links, and list of symlinks with targets
     symlinks = list_symlinks(directory)
     print(f"{bcolors.HEADER}You current directory is {home_str}.{bcolors.RESET}")
     print(f"The number of links is {len(symlinks)}.")
     if symlinks:
         print()
-        print(f"{bcolors.HEADER}Symbolic Link{bcolors.RESET}".ljust(20) + f"{bcolors.HEADER}Target Path{bcolors.RESET}")
+        print(f"{bcolors.HEADER}Symbolic Link{bcolors.RESET}".ljust(20) + f"{bcolors.HEADER}        Target Path{bcolors.RESET}")
         for link_name, target in sorted(symlinks):
             print(link_name.ljust(20) + target)
     print()
@@ -48,19 +51,23 @@ def display_links(home_str, directory, show_remove_option=False):
         print("To return to the Main Menu, press Enter.")
 
 def create_symlink(home_dir):
+    # Prompt user for filename to create symlink for
     filename = input("Enter the name of the file you want to create a symbolic link for: ").strip()
     if not filename:
+        # Catch if nothing was entered
         print(f"{bcolors.FAIL}Invalid input. Please enter a file name.{bcolors.RESET}")
         input("Press Enter to continue...")
         return
 
     matches = find_files(filename)
     if not matches:
+        # Catch if file entered doesn't exist
         print(f"{bcolors.FAIL}Error: The file does not exist. Please check the file name and try again.{bcolors.RESET}")
         input("Press Enter to continue...")
         return
 
     if len(matches) > 1:
+        # Handle multiple matches by displaying options and getting user selection
         print(f"Multiple files with the name \"{filename}\" were found:")
         for i, path in enumerate(matches, 1):
             print(f"[{i}] {path}")
@@ -71,6 +78,7 @@ def create_symlink(home_dir):
                     target = matches[selection]
                     break
                 else:
+                    # Check index input
                     print(f"{bcolors.FAIL}Invalid selection. Please try again.{bcolors.RESET}")
             except ValueError:
                 print(f"{bcolors.FAIL}Invalid selection. Please try again.{bcolors.RESET}")
@@ -83,6 +91,7 @@ def create_symlink(home_dir):
     link_path = home_dir / link_name
 
     if link_path.exists():
+        # Handle existing file with same name
         print(f"{bcolors.FAIL}A file with name {link_name} already exists in your home directory.{bcolors.RESET}")
         overwrite = input("Do you want to overwrite it? (Y/y to confirm): ").strip().lower()
         if overwrite != 'y':
@@ -91,8 +100,10 @@ def create_symlink(home_dir):
             return
         else:
             if link_path.is_symlink():
+                # Overwrite existing link
                 os.remove(link_path)
             else:
+                # Otherwise, deny
                 print(f"{bcolors.FAIL}Existing file is not a symlink. Cannot overwrite.{bcolors.RESET}")
                 input("Press Enter to continue...")
                 return
@@ -107,6 +118,7 @@ def create_symlink(home_dir):
 def remove_symlink(home_str, home_dir):
     symlinks = list_symlinks(home_dir)
     if not symlinks:
+        # Search for existing links
         print("No symbolic links found in your home directory.")
         input("Press Enter to continue...")
         return
@@ -121,6 +133,7 @@ def remove_symlink(home_str, home_dir):
             print(f"{bcolors.FAIL}Invalid option. Press Enter to return or R/r to remove.{bcolors.RESET}")
             input("Press Enter to continue...")
             continue
+        # Prompt for link to remove
         remove_name = input("Please enter the shortcut/link to remove: ").strip()
         remove_path = home_dir / remove_name
         if not remove_path.exists() or not remove_path.is_symlink():
@@ -138,14 +151,15 @@ def remove_symlink(home_str, home_dir):
 def generate_report(home_str, home_dir):
     clear_terminal()
     display_links(home_str, home_dir)
-    input()
+    input()     # Wait for user to press Enter to return to menu
 
 def main():
     home_dir = Path.home()
     home_str = str(home_dir)
     while True:
         clear_terminal()
-        print("Enter Selection:")
+        print("Welcome to the shortcut manager!\n")
+        print("Enter Your Selection:")
         print("1 - Create a shortcut in your home directory.")
         print("2 - Remove a shortcut from your home directory.")
         print("3 - Run shortcut report.")
